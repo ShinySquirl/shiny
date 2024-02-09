@@ -6,7 +6,7 @@ import openai
 from dotenv import load_dotenv
 
 # Load .env file from the specific path
-load_dotenv('/Users/nicbaird/Desktop/python_for_shiny_real/.env')
+load_dotenv('.env')
 
 
 openai.api_key = os.getenv('OPENAI_API_KEY')    
