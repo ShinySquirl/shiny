@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv('.env')
 
 
-openai.api_key = os.getenv('OPENAI_API_KEY')    
+openai.api_key = os.getenv('OPENAI_API_KEY')   
 model_id = 'text-embedding-3-small'  # or 'text-embedding-3-large'
 
 
@@ -96,10 +96,10 @@ def main(vibe):
     return ranked_scores, websites
 
 # Load or create the embeddings once
-airtable_file = '/Users/nicbaird/Desktop/python_for_shiny_real/test_data.csv'
+airtable_file = './test_data.csv'
 current_directory = os.getcwd()
 embeddings_file = os.path.join(current_directory, 'new_saved_embeddings.pkl')
-enriched_data_file = '/Users/nicbaird/Downloads/enriched_price_tulum_hotels.csv'
+enriched_data_file = './enriched_price_tulum_hotels.csv'
 
 
 # # Use the embeddings for different 'vibe' inputs
