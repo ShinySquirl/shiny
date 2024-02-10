@@ -52,5 +52,5 @@ if submit_button:
         # Reset the index of the DataFrame to maintain the integrity of the "score" ranking
         df.reset_index(drop=True, inplace=True)
 
-        # Convert the DataFrame to HTML and display it using st.markdown
-        st.markdown(df.to_html(escape=False), unsafe_allow_html=True)
+    # Convert the DataFrame to HTML and display it using st.markdown
+    st.markdown(df.to_html(escape=False), unsafe_allow_html=True)
