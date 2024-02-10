@@ -29,7 +29,7 @@ sort_option = st.sidebar.selectbox(
 # Add a selectbox in the sidebar for sort order
 sort_order = st.sidebar.selectbox(
     "Sort order",
-    ('Ascending', 'Descending')
+    ('Descending', 'Ascending')
 )
 
 # Only run the functions when the button is clicked
@@ -46,11 +46,11 @@ if submit_button:
     df = df[['Name', 'Score', 'Subtypes', 'Rating', 'City', 'Photo', 'Description', 'Website Description', 'Website', 'Email']]
 
     # Sort the DataFrame if a sort option is selected
-if sort_option != 'None':
-    df = df.sort_values(by=[sort_option, 'Score'], ascending=[(sort_order == 'Descending'), False])
-    
-    # Reset the index of the DataFrame to maintain the integrity of the "score" ranking
-    df.reset_index(drop=True, inplace=True)
+    if sort_option != 'None':
+        df = df.sort_values(by=[sort_option, 'Score'], ascending=[(sort_order == 'Descending'), False])
+        
+        # Reset the index of the DataFrame to maintain the integrity of the "score" ranking
+        df.reset_index(drop=True, inplace=True)
 
-    # Convert the DataFrame to HTML and display it using st.markdown
-    st.markdown(df.to_html(escape=False), unsafe_allow_html=True)
+        # Convert the DataFrame to HTML and display it using st.markdown
+        st.markdown(df.to_html(escape=False), unsafe_allow_html=True)
