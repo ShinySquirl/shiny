@@ -18,7 +18,10 @@ def create_embeddings(data):
     websites = {}
     client = openai.OpenAI()  # Create an OpenAI client instance
     for row in data:
-        websites[row['name']] = row['site']  # Map hotel name to website
+        if 'site' in row:  # Check if 'site' is in the row
+            websites[row['name']] = row['site']  # Map hotel name to website
+        else:
+            websites[row['name']] = None  # Use None or a default value if 'site' is not in the row
         input_text = ' '.join(str(value) for value in row.values())  # Convert the entire row to a single string
         response = client.embeddings.create(input=[input_text], model=model_id)  # Use the correct method
         embeddings[row['name']] = response.data[0].embedding
@@ -49,18 +52,23 @@ def calculate_scores(embeddings, vibe_embedding, websites, data):
         score = np.dot(embedding, vibe_embedding)  # Calculate the score
         website = websites.get(hotel_name, "")  # Get the website for the hotel, default to empty string if not found
 
+        # Define default values for the additional fields
+        city = rating = description = email_1 = website_description = subtypes = photo = 'N/A'
+
         # Check if the hotel name exists in the 'name' column of the data DataFrame
         if hotel_name in data['name'].values:
-            rooms = data.loc[data['name'] == hotel_name, 'rooms'].values[0]
-            weekend_cost_feb = data.loc[data['name'] == hotel_name, 'weekend_cost_feb'].values[0]
-        else:
-            # If the hotel name doesn't exist, use default values
-            rooms = 'N/A'
-            weekend_cost_feb = 'N/A'
+            hotel_data = data.loc[data['name'] == hotel_name].iloc[0]  # Get the first row of the DataFrame slice
+            city = hotel_data['city']
+            rating = hotel_data['rating']
+            description = hotel_data['description']
+            email_1 = hotel_data['email_1']
+            website_description = hotel_data['website_description']
+            subtypes = hotel_data['subtypes']
+            photo = hotel_data['photo']  # Get the photo URL for the hotel
 
-        # Only append a score if at least one of 'Rooms' and 'Per room cost' is not 'N/A'
-        if rooms != 'N/A' or weekend_cost_feb != 'N/A':
-            scores.append((hotel_name, score, website, rooms, weekend_cost_feb))  # Append a tuple of five elements
+        # Append a score and the additional fields
+        scores.append((hotel_name, score, website, city, rating, description, email_1, website_description, subtypes, photo))
+
     return scores
 
 def rank_hotels(scores):
@@ -71,36 +79,47 @@ def load_new_data(file_path):
     df = pd.read_csv(file_path)
     return df[['name', 'rooms', 'weekend_cost_feb']]
 
-def load_or_create_embeddings(airtable_file, embeddings_file, new_data_file):
+def load_or_create_embeddings(airtable_file, embeddings_file):
     if os.path.exists(embeddings_file):
         embeddings, websites = load_embeddings(embeddings_file)
     else:
-        data = load_data(airtable_file)
-        new_data = load_new_data(new_data_file)
-        data = pd.merge(data, new_data, on='name', how='left')
+        data = load_new_data(airtable_file)  # Use load_new_data instead of load_data
         embeddings, websites = create_embeddings(data.to_dict('records')) 
+
+        # Save the embeddings to a new pickle file based on the selected CSV file
+        if 'jn_improved_data.csv' in enriched_data_file:
+            embeddings_file = './jn_improved_embeddings.pkl'
+        else:
+            embeddings_file = './new_saved_embeddings.pkl'
         save_embeddings(embeddings, websites, embeddings_file)
+
     return embeddings, websites
 
-def main(vibe):
-    embeddings, websites = load_or_create_embeddings(airtable_file, embeddings_file, enriched_data_file)
-    data = pd.read_csv(enriched_data_file)
+def main(vibe, csv_file):
+    # Load the data from the CSV file
+    data = pd.read_csv(csv_file)
+
+    # Replace .csv with .pkl in the selected CSV file to get the embeddings file
+    embeddings_file = csv_file.replace('.csv', '.pkl')
+
+    # If the embeddings file does not exist, create it
+    if not os.path.exists(embeddings_file):
+        embeddings, websites = create_embeddings(data.to_dict('records'))
+        save_embeddings(embeddings, websites, embeddings_file)
+    else:
+        embeddings, websites = load_embeddings(embeddings_file)
+
     vibe_embedding = create_vibe_embedding(vibe)
     scores = calculate_scores(embeddings, vibe_embedding, websites, data)
     ranked_scores = rank_hotels(scores)
     
-    # Iterate over the ranked_scores list and print each hotel's name, score, website, rooms, and weekend_cost_feb
-    for i, (hotel_name, score, website, rooms, weekend_cost_feb) in enumerate(ranked_scores, start=1):
-        print(f'Hotel: {hotel_name}, Score: {score}, Website: {website}, Rooms: {rooms}, Weekend Cost Feb: {weekend_cost_feb}')
-    
     return ranked_scores, websites
+
 
 # Load or create the embeddings once
 airtable_file = './test_data.csv'
 current_directory = os.getcwd()
 embeddings_file = os.path.join(current_directory, 'new_saved_embeddings.pkl')
-enriched_data_file = './enriched_price_tulum_hotels.csv'
-
 
 # # Use the embeddings for different 'vibe' inputs
 # ranked_scores, websites = main('vibe1')
