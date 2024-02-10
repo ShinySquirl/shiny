@@ -3,7 +3,7 @@ from tulum_final import main
 import time
 import pandas as pd
 
-st.write("You must input a vibe and push submit for the results to appear.")
+st.sidebar.write("You must input a vibe and push submit for the results to appear.")
 
 # Get vibe from user
 vibe = st.sidebar.text_input("Vibe")
