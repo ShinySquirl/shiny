@@ -32,7 +32,6 @@ def create_vibe_embedding(vibe):
     response = client.embeddings.create(input=[vibe], model=model_id)  # Create embedding for the vibe
     return response.data[0].embedding
 
-
 def save_embeddings(embeddings, websites, file_path):
     with open(file_path, 'wb') as f:
         pickle.dump((embeddings, websites), f)
@@ -64,7 +63,9 @@ def calculate_scores(embeddings, vibe_embedding, websites, data):
             email_1 = hotel_data['email_1']
             website_description = hotel_data['website_description']
             subtypes = hotel_data['subtypes']
-            photo = hotel_data['photo']  # Get the photo URL for the hotel
+            # Check if the 'photo' column exists before trying to access it
+            if 'photo' in hotel_data:
+                photo = hotel_data['photo']  # Get the photo URL for the hotel
 
         # Append a score and the additional fields
         scores.append((hotel_name, score, website, city, rating, description, email_1, website_description, subtypes, photo))

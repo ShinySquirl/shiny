@@ -3,6 +3,8 @@ from tulum_final import main
 import time
 import pandas as pd
 
+st.write("You must input a vibe and push submit for the results to appear.")
+
 # Get vibe from user
 vibe = st.sidebar.text_input("Vibe")
 
@@ -44,9 +46,9 @@ if submit_button:
     df = df[['Name', 'Score', 'Subtypes', 'Rating', 'City', 'Photo', 'Description', 'Website Description', 'Website', 'Email']]
 
     # Sort the DataFrame if a sort option is selected
-    if sort_option != 'None':
-        df = df.sort_values(by=[sort_option, 'Score'], ascending=[(sort_order == 'Ascending'), False])
-
+if sort_option != 'None':
+    df = df.sort_values(by=[sort_option, 'Score'], ascending=[(sort_order == 'Descending'), False])
+    
     # Reset the index of the DataFrame to maintain the integrity of the "score" ranking
     df.reset_index(drop=True, inplace=True)
 
